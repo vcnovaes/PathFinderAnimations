@@ -1,4 +1,4 @@
-const W = 16;
+const W = 20;
 let columns;
 let rows;
 let board;
@@ -6,6 +6,7 @@ let next;
 let player;
 let food;
 let ground_type;
+let fun_arg;
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 800;
 
@@ -173,6 +174,10 @@ function setup() {
     color[NONE] = [0, 0, 0, 0];
     color[VISITED] = [10, 10, 10, 100];
     color[PATH] = [255, 10, 10, 100];
+
+
+    dfs();
+    //setInterval(dfs, 2000);
 }
 
 
@@ -195,38 +200,51 @@ function mySleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function dfs(pos) {
+function coroutine(f) {
+    var o = f(); // instantiate the coroutine
+    o.next(); // execute until the first yield
+    return function(x) {
+        o.next(x);
+    }
+}
+
+async function dfs () {
     let around = [];
     let dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
-    //console.log(JSON.stringify(pos));
+    let stack = [];
 
-    //draw_map();
-    //draw_map_effects();
+    stack.push(player);
+    console.log(JSON.stringify(player));
+
+    while (stack.length > 0) {
+
+        let pos = stack.pop();
+        board_effects[pos[0]][pos[1]] = PATH;
+
+        draw_map_effects();
+        draw_entities();
 
 
-    let c = color[VISITED];
-    fill(c[0], c[1], c[2], c[3]);
-    rect(pos[0] * W, pos[1] * W, W, W);
+        if (pos[0] == food[0] && pos[1] && food[1]) break;
 
-    board_effects[pos[0]][pos[1]] = VISITED;
+        for (let i = 0; i < dirs.length; i++) {
+            let d = dirs[i];
 
-    draw_entities();
-    
-    //@FIXME: isso é a porra de um bug, programação assíncrona é difícil.
-    await mySleep(50);
+            let npos = [d[0] + pos[0], d[1] + pos[1]];
+            if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
+                && board[npos[0]][npos[1]] != OBSTACLE
+                && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
 
-    for(let i = 0; i < dirs.length; i++) {
-        let d = dirs[i];
 
-        let npos = [d[0] + pos[0], d[1] + pos[1]];
-        if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
-             && board[npos[0]][npos[1]] != OBSTACLE
-             && board_effects[npos[0]][npos[1]] != VISITED) {
-
-                dfs(npos);
+                await mySleep(1);
+                stack.push(npos);
+            }
         }
+
+        board_effects[pos[0]][pos[1]] = VISITED;
     }
+
 }
 
 function teste() {
@@ -251,7 +269,6 @@ function draw() {
     draw_map_effects();
     draw_entities();
 
-    dfs(player);
     //call_dfs.next();
     //call_teste.next();
 

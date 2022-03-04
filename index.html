@@ -8,6 +8,27 @@
 
   </head>
   <body>
+    <script>
+    //get DPI
+    function fix_dpi() {
+        let dpi = window.devicePixelRatio;
+        //get canvas
+        let canvas = document.getElementById('defaultCanvas0');
+        //get context
+        let ctx = canvas.getContext('2d');
+        //get CSS height
+        //the + prefix casts it to an integer
+        //the slice method gets rid of "px"
+        let style_height = getComputedStyle(canvas).getPropertyValue("height").slice(0, -2);
+        //get CSS width
+        let style_width = getComputedStyle(canvas).getPropertyValue("width").slice(0, -2);
+        //scale the canvas
+        canvas.setAttribute('height', style_height * dpi);
+        canvas.setAttribute('width', style_width * dpi);
+    }
+    </script>
     <script src="./map.js"></script>
+    <script>
+    </script>
   </body>
 </html>

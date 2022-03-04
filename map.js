@@ -4,34 +4,37 @@ let rows;
 let board;
 let next;
 let ground_type;
-const CANVAS_WIDTH = 500;
-const CANVAS_HEIGHT = 500;
+const CANVAS_WIDTH = 800;
+const CANVAS_HEIGHT = 800;
 
-class Environment {
-    constructor(square_width) {
-        this.square_width = square_width
-        this.rows = floor(CANVAS_HEIGHT / this.square_width)
-        this.columns = floor(CANVAS_WIDTH / this.square_width)
-        this.board = new Array(this.columns)
-        for (let i = 0; i < this.rows; i++) {
-            this.board[i] = new Array(this.rows);
-        }
-    }
 
-}
+const WATER = 0;
+const SAND = 1;
+const MUD = 2;
+const OBSTACLE = 3;
+const PLAYER = 4;
+const FOOD = 5;
+
+let colors;
+
+
 
 
 function draw_map() {
     for (let i = 0; i < columns; i++) {
         for (let j = 0; j < rows; j++) {
-            if ((board[i][j] == 1)) fill(0);
-            else {
-                let type = ground_type[randomInteger(0, 2)]
-                fill(type[0], type[1], type[2]);
-            }
-            fill(100);
-            strokeWeight(0.1);
-            rect(i * w, j * w, w - 1, w - 1);
+            let c = color[board[i][j]];
+            fill(c[0], c[1], c[2]);
+            strokeWeight(0.0);
+            //rect(i * w, j * w, w - 1, w - 1);
+            rect(i * w, j * w, w, w);
+
+            fill(0);
+
+            //textSize(20);
+            //fill(255);
+            //stroke(255);
+            //text(board[i][j], i * w, j * w, (i + 1) * w, (j + 1) * w);
         }
     }
 }
@@ -39,32 +42,78 @@ function draw_map() {
 
 function setup() {
 
-
     createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 
-
-    //fix_dpi();
-
-
-    w = 10;
+    w = 8;
     /// Calculate columns and rows
     columns = floor(width / w);
     rows = floor(height / w);
-    // Wacky way to make a 2D array is JS
     board = new Array(columns);
+
+
+    let noise_scale = 20.0;
+
     for (let i = 0; i < columns; i++) {
         board[i] = new Array(rows);
     }
-    // Going to use multiple 2D arrays and swap them
-    next = new Array(columns);
-    for (i = 0; i < columns; i++) {
-        next[i] = new Array(rows);
+
+    for (let i = 0; i < columns; i++) {
+        for (let j = 0; j < rows; j++) {
+            let noise_val = noise(i / noise_scale, j / noise_scale);
+
+            if (noise_val < 0.25) {
+                board[i][j] = WATER;
+            } else if(noise_val < 0.3) {
+                board[i][j] = SAND;
+            } else {
+                board[i][j] = MUD;
+            }
+            //board[i][j] = (i + j) % 6;
+        }
     }
-    ground_type = [(66, 135, 245), (245, 161, 66), (245, 239, 66)]
+
+    place_obstacles();
+
+    colors = new Array(11);
+    color[SAND] = [230, 197, 37];
+    color[MUD] = [92, 51, 18];
+    color[WATER] = [95, 116, 222];
+    color[OBSTACLE] = [121, 114, 125];
+    color[PLAYER] = [84, 191, 113];
+    color[FOOD] = [191, 84, 130];
 }
 
-function randomInteger(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+function place_obstacles() {
+
+    let n_verticals = floor(random(8, 30));
+    let n_horizontals = floor(random(8, 30));
+
+    for(let n = 0; n < n_verticals; n++) {
+        let col = floor(random(0, columns));
+        let ro = floor(random(0, rows));
+
+        let sz = floor(random(10, 30));
+
+        for(let r = ro; r < sz + ro && r < rows; r++) {
+            if (board[col][r] == OBSTACLE) break;
+
+            board[col][r] = OBSTACLE;
+        }
+    }
+
+    for(let n = 0; n < n_horizontals; n++) {
+        let col = floor(random(0, columns));
+        let ro = floor(random(0, rows));
+
+        let sz = floor(random(10, 30));
+
+        for(let c = col; c < sz + col&& c < columns; c++) {
+            if (board[c][ro] == OBSTACLE) break;
+
+            board[c][ro] = OBSTACLE;
+        }
+    }
+
 }
 
 let draw_again = false;
@@ -74,4 +123,5 @@ function draw() {
 
     background(255);
     draw_map();
+
 }

@@ -1,3 +1,12 @@
+#inp_setup { 
+    position: fixed;
+    left: 40px; 
+    color: aliceblue;
+
+}
+
+
+
 body {
     margin: 0;
     background-size: 400% 400%;

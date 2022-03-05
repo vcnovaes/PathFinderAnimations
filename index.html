@@ -9,14 +9,14 @@
   </head>
   <body>
     <script>
-    //get DPI
+    //get DPI 
     function fix_dpi() {
         let dpi = window.devicePixelRatio;
         //get canvas
         let canvas = document.getElementById('defaultCanvas0');
         //get context
         let ctx = canvas.getContext('2d');
-        //get CSS height
+        //get CSS heigh t 
         //the + prefix casts it to an integer
         //the slice method gets rid of "px"
         let style_height = getComputedStyle(canvas).getPropertyValue("height").slice(0, -2);
@@ -30,5 +30,28 @@
     <script src="./map.js"></script>
     <script>
     </script>
+    <div id="inp_setup">
+      <form action="/input.js">
+        <label for="search_algorithm">Search Algorithms</label><br>  
+        <input type="text" name="algorithms" list="algorithms">
+        <datalist id="algorithms">
+          <option value = "DFS"></option>
+          <option value = "BFS"></option>
+          <option value = "A*"></option> 
+        </datalist>
+        
+        <input type="submit" value="Search">
+        <br>
+        <br> 
+        <label for="square_width">Square Width </label>
+        <input type="range" min="10" max="100"  value = "50"> 
+        
+        <br> <br><br> 
+        <input type="submit" value = "Reload Map" > 
+
+      </form>
+
+    </div>
+
   </body>
 </html>

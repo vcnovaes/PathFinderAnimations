@@ -1,3 +1,20 @@
+/*
+
+TODO:
+
+- Desenhar o caminho quando a bola encontra a comida
+- Implementar
+    - BFS
+    - A*
+    - Outros...
+- Deixar a quantidade de paredes proporcional à quantidade de células
+- Implementar um toggle para escolher o algoritmo de busca
+- Implementar uma maquina de estados para alternar entre os algoritmos
+- Dar toques finais na pagina
+
+*/
+
+
 const W = 20;
 let columns;
 let rows;
@@ -27,15 +44,19 @@ let color;
 let call_dfs;
 let call_teste;
 
+function draw_ij(i, j) {
+    let c = color[board[i][j]];
+    fill(c[0], c[1], c[2]);
+    strokeWeight(0.0);
+    rect(i * W, j * W, W, W);
+
+    fill(0);
+}
+
 function draw_map() {
     for (let i = 0; i < columns; i++) {
         for (let j = 0; j < rows; j++) {
-            let c = color[board[i][j]];
-            fill(c[0], c[1], c[2]);
-            strokeWeight(0.1);
-            rect(i * W, j * W, W, W);
-
-            fill(0);
+            draw_ij(i, j);
         }
     }
 }
@@ -45,7 +66,7 @@ function draw_map_effects() {
         for (let j = 0; j < rows; j++) {
             let c = color[board_effects[i][j]];
             fill(c[0], c[1], c[2], c[3]);
-            strokeWeight(0.0);
+            strokeWeight(0.02);
             rect(i * W, j * W, W, W);
 
             fill(0);
@@ -172,8 +193,8 @@ function setup() {
 
 
     color[NONE] = [0, 0, 0, 0];
-    color[VISITED] = [10, 10, 10, 100];
-    color[PATH] = [255, 10, 10, 100];
+    color[VISITED] = [10, 10, 10, 130];
+    color[PATH] = [255, 10, 10, 130];
 
 
     dfs();
@@ -217,16 +238,18 @@ async function dfs () {
     stack.push(player);
     console.log(JSON.stringify(player));
 
+    draw_map_effects();
+
     while (stack.length > 0) {
 
         let pos = stack.pop();
         board_effects[pos[0]][pos[1]] = PATH;
 
-        draw_map_effects();
-        draw_entities();
+        draw_ij(pos[0], pos[1]);
+        //draw_map_effects();
+        //draw_entities();
 
-
-        if (pos[0] == food[0] && pos[1] && food[1]) break;
+        if (pos[0] == food[0] && pos[1] == food[1]) break;
 
         for (let i = 0; i < dirs.length; i++) {
             let d = dirs[i];
@@ -245,15 +268,6 @@ async function dfs () {
         board_effects[pos[0]][pos[1]] = VISITED;
     }
 
-}
-
-function teste() {
-    console.log('A');
-    let a = yield;
-    console.log('B');
-    let b = yield;
-    console.log('C');
-    let c = yield;
 }
 
 let draw_again = false;

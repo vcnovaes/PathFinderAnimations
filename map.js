@@ -336,6 +336,11 @@ async function bfs () {
     while (queue.length > 0) {
 
         let pos = queue.pop();
+
+        if(board_effects[pos[0]][pos[1]] == PATH || board_effects[pos[0]][pos[1]] == VISITED) {
+            continue;
+        }
+
         board_effects[pos[0]][pos[1]] = PATH;
 
         draw_ij(pos[0], pos[1]);
@@ -355,13 +360,14 @@ async function bfs () {
             if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
                 && board[npos[0]][npos[1]] != OBSTACLE
                 && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
-                await mySleep(1);
+                await mySleep(100);
                 solution_path.push(npos);
                 queue.push(npos);
             }else {
                 solution_path.splice(solution_path.findIndex((p) => p == npos))
             }
         }
+
         board_effects[pos[0]][pos[1]] = VISITED;
     }
     const print_solution = () => {

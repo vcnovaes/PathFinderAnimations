@@ -1,11 +1,3 @@
-# Installation
+### Autonomous Agent with Search Algorithms
 
-Make sure you have the Rust toolchain installed (go to [https://rustup.rs](https://rustup.rs))
-
-You need `libudev` and `vulkan` as well.
-
-
-# Running
-
-Once you have all the dependencies intalled you just clone the repo and run `cargo run --release`
-
+- This is a project for the class IF684 - Sistemas Inteligentes(Intelligent Systems) 

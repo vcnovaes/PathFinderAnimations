@@ -2,20 +2,19 @@
 
 TODO:
 
-- Desenhar o caminho quando a bola encontra a comida
-- Implementar
+[] Desenhar o caminho quando a bola encontra a comida
+[] Implementar
     - BFS
     - A*
     - Outros...
-- Deixar a quantidade de paredes proporcional à quantidade de células
-- Implementar um toggle para escolher o algoritmo de busca
-- Implementar uma maquina de estados para alternar entre os algoritmos
-- Dar toques finais na pagina
+[x] Deixar a quantidade de paredes proporcional à quantidade de células
+[~] Implementar um toggle para escolher o algoritmo de busca
+[-] Implementar uma maquina de estados para alternar entre os algoritmos
+[-] Dar toques finais na pagina
 
 */
 
-
-const W = 20;
+const W = 60; //square width 
 let columns;
 let rows;
 let board;
@@ -39,10 +38,44 @@ const NONE = 6;
 const VISITED = 7;
 const PATH = 8;
 
+
+let solution_path = [];
 let color;
 
 let call_dfs;
 let call_teste;
+
+let path_square = []
+
+
+class Queue {
+    constructor() {
+        this.elements = {}; 
+        this.head = 0; 
+        this.tail = 0;
+    }
+    push(element){
+        this.elements[this.tail] = element; 
+        this.tail++; 
+    }
+    pop(){
+        const item = this.elements[this.head]
+        delete this.elements[this.head]
+        this.head++ 
+        return item;
+    }
+    front(){
+        return this.elements[this.head]
+    }
+    get length(){
+        return this.tail - this.head;
+    }
+    get isEmpty(){
+        return this.length === 0; 
+    }
+
+}
+
 
 function draw_ij(i, j) {
     let c = color[board[i][j]];
@@ -51,6 +84,13 @@ function draw_ij(i, j) {
     rect(i * W, j * W, W, W);
 
     fill(0);
+}
+function draw_path(i, j) {
+    fill(65);
+    strokeWeight(0.0);
+    rect(i * W, j * W, W, W);
+    console.log("printing")
+    fill(40);
 }
 
 function draw_map() {
@@ -68,7 +108,6 @@ function draw_map_effects() {
             fill(c[0], c[1], c[2], c[3]);
             strokeWeight(0.02);
             rect(i * W, j * W, W, W);
-
             fill(0);
         }
     }
@@ -88,8 +127,8 @@ function draw_entities() {
 
 function place_obstacles() {
 
-    let n_verticals = floor(random(8, 30));
-    let n_horizontals = floor(random(8, 30));
+    let n_verticals = floor(random(8,( columns/2)))
+    let n_horizontals = floor(random(8, rows/2));
 
     for(let n = 0; n < n_verticals; n++) {
         let col = floor(random(0, columns));
@@ -168,9 +207,9 @@ function setup() {
 
             let noise_val = noise(i / noise_scale, j / noise_scale);
 
-            if (noise_val < 0.25) {
+            if (noise_val < 0.3) {
                 board[i][j] = WATER;
-            } else if(noise_val < 0.3) {
+            } else if(noise_val < 0.4) {
                 board[i][j] = SAND;
             } else {
                 board[i][j] = MUD;
@@ -197,8 +236,11 @@ function setup() {
     color[PATH] = [255, 10, 10, 130];
 
 
-    dfs();
+    //dfs();
+    
+    bfs()
     //setInterval(dfs, 2000);
+    //mouseClicked(() => draw_map())
 }
 
 
@@ -237,7 +279,7 @@ async function dfs () {
 
     stack.push(player);
     console.log(JSON.stringify(player));
-
+    
     draw_map_effects();
 
     while (stack.length > 0) {
@@ -246,10 +288,14 @@ async function dfs () {
         board_effects[pos[0]][pos[1]] = PATH;
 
         draw_ij(pos[0], pos[1]);
+        solution_path.push(pos);
         //draw_map_effects();
         //draw_entities();
 
-        if (pos[0] == food[0] && pos[1] == food[1]) break;
+        if (pos[0] == food[0] && pos[1] == food[1]){
+            console.log(solution_path); 
+            break;
+        }
 
         for (let i = 0; i < dirs.length; i++) {
             let d = dirs[i];
@@ -258,15 +304,72 @@ async function dfs () {
             if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
                 && board[npos[0]][npos[1]] != OBSTACLE
                 && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
-
-
                 await mySleep(1);
+                solution_path.push(npos);
                 stack.push(npos);
+            }else {
+                solution_path.splice(solution_path.findIndex((p) => p == npos))
             }
         }
 
         board_effects[pos[0]][pos[1]] = VISITED;
     }
+    const print_solution = () => {
+        solution_path.forEach((position) =>
+            draw_path(position[0], position[1]) 
+        )
+    }
+    print_solution()
+
+}
+async function bfs () {
+    let around = [];
+    let dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+    let queue = new Queue();
+
+    queue.push(player);
+    console.log(JSON.stringify(player));
+    
+    draw_map_effects();
+
+    while (queue.length > 0) {
+
+        let pos = queue.pop();
+        board_effects[pos[0]][pos[1]] = PATH;
+
+        draw_ij(pos[0], pos[1]);
+        solution_path.push(pos);
+        //draw_map_effects();
+        //draw_entities();
+
+        if (pos[0] == food[0] && pos[1] == food[1]){
+            console.log(solution_path); 
+            break;
+        }
+
+        for (let i = 0; i < dirs.length; i++) {
+            let d = dirs[i];
+
+            let npos = [d[0] + pos[0], d[1] + pos[1]];
+            if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
+                && board[npos[0]][npos[1]] != OBSTACLE
+                && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
+                await mySleep(1);
+                solution_path.push(npos);
+                queue.push(npos);
+            }else {
+                solution_path.splice(solution_path.findIndex((p) => p == npos))
+            }
+        }
+        board_effects[pos[0]][pos[1]] = VISITED;
+    }
+    const print_solution = () => {
+        solution_path.forEach((position) =>
+            draw_path(position[0], position[1]) 
+        )
+    }
+    print_solution()
 
 }
 

@@ -390,11 +390,11 @@ async function animatePlayer(path) {
         let next_pos = path[cur];
 
 
-        let slow = terrain_slow(board[next_pos[0]][next_pos[1]]) * 50;
+        let slow = terrain_slow(board[next_pos[0]][next_pos[1]]) * 200;
 
         let n = 10;
 
-        for (let i = 1; i < n - 1; i++) {
+        for (let i = 2; i < n - 1; i++) {
 
             let ratio = i / n;
 

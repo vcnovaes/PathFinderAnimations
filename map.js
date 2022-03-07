@@ -14,7 +14,7 @@ TODO:
 
 */
 
-const W = 60; //square width 
+const W = 40; //square width 
 let columns;
 let rows;
 let board;
@@ -49,7 +49,8 @@ const EDGE = 10;
 
 const STOPPED = 0;
 const RUNNING = 1;
-const WALKING = 2; 
+const PRE_WALKING = 2; 
+const WALKING = 3; 
 const delay_time = 1;
 
 
@@ -61,6 +62,7 @@ let iterations = 0;
 
 let call_dfs;
 let call_teste;
+let player_anim;
 
 let path_square = []
 
@@ -142,6 +144,14 @@ function draw_entities() {
     fill(col_f[0], col_f[1], col_f[2]);
     ellipse(food[0] * W + W / 2, food[1] * W + W / 2, W);
 }
+
+function draw_anim() {
+    let col_p = [255, 255, 255];
+
+    fill(col_p[0], col_p[1], col_p[2]);
+    ellipse(player_anim[0] * W + W / 2, player_anim[1] * W + W / 2, W);
+}
+
 async function redraw_player(){
     fill(col_p[0], col_p[1], col_p[2]);
     ellipse(player[0] * W + W / 2, player[1] * W + W / 2, W);
@@ -304,14 +314,6 @@ function mySleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function coroutine(f) {
-    var o = f(); // instantiate the coroutine
-    o.next(); // execute until the first yield
-    return function(x) {
-        o.next(x);
-    }
-}
-
 async function dfs () {
     game_state = RUNNING;
     let around = [];
@@ -323,16 +325,11 @@ async function dfs () {
     console.log(JSON.stringify(player));
     let sol = {}
     let lp = {} 
-    draw_map_effects();
 
     while (stack.length > 0) {
 
         let pos = stack.pop();
         board_effects[pos[0]][pos[1]] = PATH;
-
-        draw_ij(pos[0], pos[1]);
-        //draw_map_effects();
-        //draw_entities();
 
         if(pos[0] == food[0] && pos[1] == food[1]) {
             lp = pos; 
@@ -355,24 +352,43 @@ async function dfs () {
 
         board_effects[pos[0]][pos[1]] = VISITED;
     }
-   // print_solution()
-    //executing = false; 
-    //drawSolutionPath(sol, lp); 
-    //await mySleep(delay_time*1000);
+
     path_solution = sol; 
     last_position = lp;
-    game_state = WALKING;
+    game_state = PRE_WALKING;
 
 }
-const drawSolutionPath = (sol_path, last_pos) => {
-    let solution = [] 
+
+function drawSolutionPath(sol_path, last_pos) {
+    let solution = [food]; 
+
     while(last_pos != player){
         board_effects[last_pos[0]][last_pos[1]] = SOLUTION;
         last_pos = sol_path[last_pos];
         solution.push(last_pos); 
     }
+
+    board_effects[player[0]][player[1]] = SOLUTION;
     draw_map_effects();
-    return solution 
+
+    //game_state = STOPPED;
+
+    return solution.reverse(); 
+}
+
+async function animatePlayer(path) {
+    let cur = 0;
+
+    while (cur < path.length) {
+        let next_pos = path[cur];
+
+        player_anim = next_pos;
+        await mySleep(50);
+
+        cur ++;
+    }
+
+    game_state = STOPPED;
 }
 
 async function bfs () {
@@ -386,8 +402,6 @@ async function bfs () {
     queue.push(player);
     console.log(JSON.stringify(player));
     
-    draw_map_effects();
-
     path = {}
     let npos; 
     let lp;
@@ -400,10 +414,6 @@ async function bfs () {
         }
 
         board_effects[pos[0]][pos[1]] = PATH;
-
-        draw_ij(pos[0], pos[1]);
-        //draw_map_effects();
-        //draw_entities();
 
         if(pos[0] == food[0] && pos[1] == food[1]){
             lp = pos;
@@ -425,11 +435,10 @@ async function bfs () {
         }
         board_effects[pos[0]][pos[1]] = VISITED;
     }
-    //drawSolutionPath(path,lp);
-    //await mySleep(delay_time*1000);
+
     path_solution = path;
     last_position = lp; 
-    game_state = WALKING;
+    game_state = PRE_WALKING;
 }
 
 let draw_again = false;
@@ -442,6 +451,14 @@ const getSelectorValue = () =>  {
 
 function draw() {
 
+    fix_dpi();
+
+    background(255);
+
+    draw_map();
+    draw_map_effects();
+    draw_entities();
+
     if(game_state == STOPPED) {
         reset_board();
         let nextAlgo = getSelectorValue();
@@ -449,21 +466,19 @@ function draw() {
              dfs();
 
         } else {
-            path_solution, last_position = bfs();
+            bfs();
             
         }
+    } else if(game_state == PRE_WALKING) {
+        let path = drawSolutionPath(path_solution, last_position);
+        player_anim = player;
+        animatePlayer(path);
+
+        game_state = WALKING;
+    } else if(game_state == WALKING) {
+        draw_anim();
     }
-    if(game_state == WALKING){
-        drawSolutionPath(path_solution, last_position);
-    }
 
-    fix_dpi();
-
-    background(255);
-
-    draw_map();
-    draw_map_effects()
-    draw_entities()
     
     //call_teste.next();
 

@@ -31,25 +31,20 @@
     <script>
     </script>
     <div id="inp_setup">
-      <form action="/input.js">
         <label for="search_algorithm">Search Algorithms</label><br>  
-        <input type="text" id = "choose_algorithm" placeholder= "BFS" name="algorithms" list="algorithms" onblur="getValue">
-        <datalist id="algorithms">
-          <option value = "DFS"></option>
-          <option value = "BFS"></option>
-          <option value = "A*"></option> 
-        </datalist>
-        
-        <input type="submit" value="Search">
+        <select id="algorithms">
+          <option value = "DFS">DFS</option>
+          <option value = "BFS">BFS</option>
+          <option value = "A*">A*</option> 
+        </select>
         <br>
         <br> 
         <label for="square_width">Square Width </label>
         <input type="range" min="10" max="100"  value = "50"> 
         
         <br> <br><br> 
-        <input type="submit" value = "Reload Map" > 
 
-      </form>
+        <button onclick="generate_new_map()">Reset map</button>
 
     </div>
 

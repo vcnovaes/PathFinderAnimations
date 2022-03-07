@@ -5,9 +5,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8" />
-
+    <script  src="./map.js" ></script>
   </head>
   <body>
+    
     <script>
     //get DPI 
     function fix_dpi() {
@@ -27,15 +28,16 @@
         canvas.setAttribute('width', style_width * dpi);
     }
     </script>
-    <script src="./map.js"></script>
-    <script>
-    </script>
+    
     <div id="inp_setup">
         <label for="search_algorithm">Search Algorithms</label><br>  
         <select id="algorithms">
           <option value = "DFS">DFS</option>
           <option value = "BFS">BFS</option>
+          <option value = "GULOSO">GULOSO</option>
           <option value = "A*">A*</option> 
+          <option value = "CUSTO_UNIFORME">CUSTO UNIFORME</option> 
+          
         </select>
         <br>
         <br> 

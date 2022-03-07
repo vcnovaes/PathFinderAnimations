@@ -14,6 +14,9 @@ TODO:
 
 */
 
+//import {MinHeap} from './dataStructure.js' 
+
+
 const W = 40; //square width 
 let columns;
 let rows;
@@ -65,6 +68,7 @@ let call_teste;
 let player_anim;
 
 let path_square = []
+
 
 
 class Queue {
@@ -460,6 +464,64 @@ async function bfs () {
     game_state = PRE_WALKING;
 }
 
+function calc_Dist(posA){    
+    return Math.pow(posA[0] - food[0], 2) + Math.pow(posA[1] - food[1], 2) 
+}
+async function guloso(){
+    game_state = RUNNING;
+    let dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    console.log(JSON.stringify(player));
+    
+    path = {}
+    let npos; 
+    let lp;
+   
+    while (true) {
+
+        if(board_effects[pos[0]][pos[1]] == PATH || board_effects[pos[0]][pos[1]] == VISITED) {
+            continue;
+        }
+
+        board_effects[pos[0]][pos[1]] = PATH;
+
+        if(pos[0] == food[0] && pos[1] == food[1]){
+            lp = pos;
+            break;
+        }
+
+        let index=-1, dist_min =1000000
+        for (let i = 0; i < dirs.length; i++) {
+            let d = dirs[i];
+
+            npos = [d[0] + pos[0], d[1] + pos[1]];
+        
+            if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
+                && board[npos[0]][npos[1]] != OBSTACLE
+                && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
+                    await mySleep(delay_time);
+                    let dist_cur = calc_Dist(npos);
+                    if (dist_min > dist_cur){
+                        index = i;
+                        dist_min = dist_cur;
+                    }
+            }
+        }
+        if(index== -1) break;
+
+        let d2 = dirs[index];
+        npos = [d2[0] + pos[0], d2[1] + pos[1]];
+
+        
+        board_effects[npos[0]][npos[1]] = EDGE;
+        path[npos] = pos; 
+        board_effects[pos[0]][pos[1]] = VISITED;
+        
+    }
+
+    path_solution = path;
+    last_position = lp; 
+    game_state = PRE_WALKING;
+}
 let draw_again = false;
 
 const getSelectorValue = () =>  { 
@@ -484,9 +546,11 @@ function draw() {
         if(nextAlgo == "DFS") {
              dfs();
 
-        } else {
+        } else if(nextAlgo == "BFS") {
             bfs();
             
+        } else if(nextAlgo == "GULOSO") {
+            guloso();
         }
     } else if(game_state == PRE_WALKING) {
         let path = drawSolutionPath(path_solution, last_position);

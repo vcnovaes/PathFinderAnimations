@@ -23,6 +23,8 @@ let player;
 let food;
 let ground_type;
 let fun_arg;
+let choosed_algorithm
+let executing = false;
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 800;
 
@@ -235,10 +237,6 @@ function setup() {
     color[VISITED] = [10, 10, 10, 130];
     color[PATH] = [255, 10, 10, 130];
 
-
-    //dfs();
-    
-    bfs()
     //setInterval(dfs, 2000);
     //mouseClicked(() => draw_map())
 }
@@ -320,6 +318,7 @@ async function dfs () {
         )
     }
     print_solution()
+    executing = false; 
 
 }
 async function bfs () {
@@ -376,10 +375,19 @@ async function bfs () {
         )
     }
     print_solution()
+    executing = false; 
 
 }
 
 let draw_again = false;
+
+const getValue = () =>  { 
+    const val = document.querySelector('input').value 
+    //console.log(val) 
+    return val 
+}
+
+
 function draw() {
 
     fix_dpi();
@@ -387,12 +395,30 @@ function draw() {
     background(255);
 
     draw_map();
+    choosed_algorithm = getValue() ;
+    if(choosed_algorithm == "DFS" && !executing){
+        executing = true; 
+        dfs();
+        
+        draw_map()
+        //reset_board()
+        //call_dfs.next();
+    }
+    else if(choosed_algorithm == "BFS" && !executing){
+        executing = true; 
+        
+        bfs()
+        
+        draw_map()
 
+        //reset_board()
+    }
+    console.log(choosed_algorithm)
 
-    draw_map_effects();
-    draw_entities();
-
-    //call_dfs.next();
+    draw_map_effects()
+    draw_entities()
+    
     //call_teste.next();
+
 
 }

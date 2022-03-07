@@ -33,7 +33,7 @@
     <div id="inp_setup">
       <form action="/input.js">
         <label for="search_algorithm">Search Algorithms</label><br>  
-        <input type="text" name="algorithms" list="algorithms">
+        <input type="text" id = "choose_algorithm" name="algorithms" list="algorithms" onblur="getValue">
         <datalist id="algorithms">
           <option value = "DFS"></option>
           <option value = "BFS"></option>

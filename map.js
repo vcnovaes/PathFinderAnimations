@@ -14,7 +14,7 @@ TODO:
 
 */
 
-const W = 100; //square width 
+const W = 60; //square width 
 let columns;
 let rows;
 let board;
@@ -25,6 +25,10 @@ let ground_type;
 let fun_arg;
 let choosed_algorithm
 let executing = false;
+
+let path_solution ; 
+let last_position ; 
+
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 800;
 
@@ -45,8 +49,9 @@ const EDGE = 10;
 
 const STOPPED = 0;
 const RUNNING = 1;
-
+const WALKING = 2; 
 const delay_time = 1;
+
 
 let game_state = STOPPED;
 
@@ -352,9 +357,11 @@ async function dfs () {
     }
    // print_solution()
     //executing = false; 
-    drawSolutionPath(sol, lp); 
-    await mySleep(delay_time*1000);
-    game_state = STOPPED;
+    //drawSolutionPath(sol, lp); 
+    //await mySleep(delay_time*1000);
+    path_solution = sol; 
+    last_position = lp;
+    game_state = WALKING;
 
 }
 const drawSolutionPath = (sol_path, last_pos) => {
@@ -418,9 +425,11 @@ async function bfs () {
         }
         board_effects[pos[0]][pos[1]] = VISITED;
     }
-    
-    game_state = STOPPED;
-    return path, lp  //return the path dict and the last position 
+    //drawSolutionPath(path,lp);
+    //await mySleep(delay_time*1000);
+    path_solution = path;
+    last_position = lp; 
+    game_state = WALKING;
 }
 
 let draw_again = false;
@@ -437,20 +446,15 @@ function draw() {
         reset_board();
         let nextAlgo = getSelectorValue();
         if(nextAlgo == "DFS") {
-            dfs();
+             dfs();
 
         } else {
-            let sol, last_pos = bfs();
-            let solution = drawSolutionPath(sol,last_pos);
-            console.log(solution);
-            for(let i = 0 ; i < solution.length ; i++){
-                player = solution[i];
-                redraw_player();
-                
-                //draw_entities();
-                //await mySleep(10);
-            }
+            path_solution, last_position = bfs();
+            
         }
+    }
+    if(game_state == WALKING){
+        drawSolutionPath(path_solution, last_position);
     }
 
     fix_dpi();

@@ -15,9 +15,7 @@ TODO:
 */
 
 //import {MinHeap} from './dataStructure.js' 
-
-
-const W = 40; //square width 
+const W = 70; //square width 
 let columns;
 let rows;
 let board;
@@ -173,8 +171,8 @@ function place_obstacles() {
 
     let n_verticals = floor(random(8,( columns/2)))
     let n_horizontals = floor(random(8, rows/2));
-
-    for(let n = 0; n < n_verticals; n++) {
+    let flag =1;
+    for(let n = 0; n < n_verticals; n++) {    
         let col = floor(random(0, columns));
         let ro = floor(random(0, rows));
 
@@ -186,7 +184,6 @@ function place_obstacles() {
             board[col][r] = OBSTACLE;
         }
     }
-
     for(let n = 0; n < n_horizontals; n++) {
         let col = floor(random(0, columns));
         let ro = floor(random(0, rows));
@@ -197,17 +194,22 @@ function place_obstacles() {
 
         if (dir == 0) {
             for (let c = col; c < sz + col && c < columns; c++) {
+                if(!flag) continue
+                flag = !flag;
                 if (board[c][ro] == OBSTACLE) break;
 
                 board[c][ro] = OBSTACLE;
             }
         } else {
             for (let c = col + sz; c > sz && c < columns && c > 0; c--) {
+                if(!flag) continue
+                flag = !flag;
                 if (board[c][ro] == OBSTACLE) break;
 
                 board[c][ro] = OBSTACLE;
             }
         }
+        flag = !flag
     }
 }
 
@@ -498,7 +500,7 @@ async function guloso(){
         
             if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
                 && board[npos[0]][npos[1]] != OBSTACLE
-                && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
+                && /* board_effects[npos[0]][npos[1]] != VISITED && */ board_effects[npos[0]][npos[1]] != PATH ) {
                     await mySleep(delay_time);
                     let dist_cur = calc_Dist(npos);
                     if (dist_min > dist_cur){
@@ -507,7 +509,7 @@ async function guloso(){
                     }
             }
         }
-        if(index== -1) break;
+        if(index == -1) break;
 
         let d2 = dirs[index];
         npos = [d2[0] + pos[0], d2[1] + pos[1]];

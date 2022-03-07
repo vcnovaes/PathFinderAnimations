@@ -312,7 +312,8 @@ async function dfs () {
 
     stack.push(player);
     console.log(JSON.stringify(player));
-    
+    let sol = {}
+    let lp = {} 
     draw_map_effects();
 
     while (stack.length > 0) {
@@ -325,6 +326,7 @@ async function dfs () {
         //draw_entities();
 
         if(pos[0] == food[0] && pos[1] == food[1]) {
+            lp = pos; 
             break; 
         }
 
@@ -336,7 +338,7 @@ async function dfs () {
                 && board[npos[0]][npos[1]] != OBSTACLE
                 && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
                 await mySleep(delay_time);
-
+                sol [npos] = pos; 
                 board_effects[npos[0]][npos[1]] = EDGE;
                 stack.push(npos);
             }
@@ -346,22 +348,20 @@ async function dfs () {
     }
    // print_solution()
     //executing = false; 
-
+    drawSolutionPath(sol, last_pos); 
+    await mySleep(delay_time*1000);
     game_state = STOPPED;
 
 }
 const drawSolutionPath = (sol_path, last_pos) => {
     
-    const drawSolution = (p) => { 
-        board_effects[p[0]][p][1] = SOLUTION 
-        draw_ij(p[0],p[1])
+    while(last_pos != player){
+        board_effects[last_pos[0]][last_pos[1]] = SOLUTION;
+        last_pos = sol_path[last_pos];
+        solution.push(last_pos); 
     }
-    drawSolution(last_pos)
-    let cur_position = last_pos
-    while(sol_path[cur_position[0]][cur_position[1]] != player){
-        cur_position = sol_path[cur_position[0]][cur_position[1]]
-        drawSolution(cur_position)
-    }
+    draw_map_effects();
+    
 }
 
 async function bfs () {
@@ -379,6 +379,7 @@ async function bfs () {
 
     path = {}
     let npos; 
+    let lp;
     while (queue.length > 0) {
 
         let pos = queue.pop();
@@ -394,6 +395,7 @@ async function bfs () {
         //draw_entities();
 
         if(pos[0] == food[0] && pos[1] == food[1]){
+            lp = pos;
             break;
         }
         for (let i = 0; i < dirs.length; i++) {
@@ -413,7 +415,8 @@ async function bfs () {
         board_effects[pos[0]][pos[1]] = VISITED;
     }
     
-
+    drawSolutionPath(path, lp);
+    await mySleep(delay_time*100);
     game_state = STOPPED;
     return path, npos  //return the path dict and the last position 
 }

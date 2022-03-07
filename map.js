@@ -14,7 +14,7 @@ TODO:
 
 */
 
-const W = 60; //square width 
+const W = 40; //square width 
 let columns;
 let rows;
 let board;
@@ -41,7 +41,16 @@ const VISITED = 7;
 const PATH = 8;
 const SOLUTION = 9
 
+const STOPPED = 0;
+const RUNNING = 1;
+
+const delay_time = 15;
+
+let game_state = STOPPED;
+
 let color;
+
+let iterations = 0;
 
 let call_dfs;
 let call_teste;
@@ -167,7 +176,38 @@ function place_obstacles() {
             }
         }
     }
+}
 
+function generate_terrain() {
+
+    console.log("Generating terrain");
+
+    let noise_scale = 20.0;
+
+    for (let i = 0; i < columns; i++) {
+        for (let j = 0; j < rows; j++) {
+            board_effects[i][j] = NONE;
+
+
+            let noise_val = noise(i / noise_scale, j / noise_scale, iterations);
+
+            if (noise_val < 0.3) {
+                board[i][j] = WATER;
+            } else if(noise_val < 0.4) {
+                board[i][j] = SAND;
+            } else {
+                board[i][j] = MUD;
+            }
+            //board[i][j] = (i + j) % 6;
+        }
+    }
+}
+
+function generate_new_map() {
+    iterations += 1;
+    generate_terrain();
+    reset_board();
+    place_obstacles();
 }
 
 function reset_board() {
@@ -196,29 +236,13 @@ function setup() {
     board_effects = new Array(columns);
 
 
-    let noise_scale = 20.0;
 
     for (let i = 0; i < columns; i++) {
         board[i] = new Array(rows);
         board_effects[i] = new Array(rows);
     }
 
-    for (let i = 0; i < columns; i++) {
-        for (let j = 0; j < rows; j++) {
-            board_effects[i][j] = NONE;
-
-            let noise_val = noise(i / noise_scale, j / noise_scale);
-
-            if (noise_val < 0.3) {
-                board[i][j] = WATER;
-            } else if(noise_val < 0.4) {
-                board[i][j] = SAND;
-            } else {
-                board[i][j] = MUD;
-            }
-            //board[i][j] = (i + j) % 6;
-        }
-    }
+    generate_terrain();
 
     place_obstacles();
     place_entity(PLAYER);
@@ -239,7 +263,11 @@ function setup() {
     color[SOLUTION] = [52, 235, 88, 130]
     //setInterval(dfs, 2000);
     //mouseClicked(() => draw_map())
-    //bfs()
+
+
+    let next = getSelectorValue();
+
+    bfs()
     //dfs()
 }
 
@@ -272,6 +300,7 @@ function coroutine(f) {
 }
 
 async function dfs () {
+    game_state = RUNNING;
     let around = [];
     let dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
@@ -302,7 +331,7 @@ async function dfs () {
             if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
                 && board[npos[0]][npos[1]] != OBSTACLE
                 && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
-                await mySleep(1);
+                await mySleep(delay_time);
                 stack.push(npos);
             }
         }
@@ -312,6 +341,7 @@ async function dfs () {
    // print_solution()
     //executing = false; 
 
+    game_state = STOPPED;
 
 }
 const drawSolutionPath = (sol_path, last_pos) => {
@@ -329,6 +359,8 @@ const drawSolutionPath = (sol_path, last_pos) => {
 }
 
 async function bfs () {
+
+    game_state = RUNNING;
     let around = [];
     let dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
@@ -365,7 +397,7 @@ async function bfs () {
             if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
                 && board[npos[0]][npos[1]] != OBSTACLE
                 && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
-                await mySleep(100);
+                await mySleep(delay_time);
                 queue.push(npos);
                 path[npos] = pos; 
             }
@@ -374,45 +406,35 @@ async function bfs () {
     }
     
 
-    executing = false; 
+    game_state = STOPPED;
     return path, npos  //return the path dict and the last position 
 }
 
 let draw_again = false;
 
-const getValue = () =>  { 
-    const val = document.querySelector('input').value 
+const getSelectorValue = () =>  { 
+    const val = document.querySelector('select').value 
     //console.log(val) 
     return val 
 }
 
-
 function draw() {
+
+    if(game_state == STOPPED) {
+        reset_board();
+        let nextAlgo = getSelectorValue();
+        if(nextAlgo == "DFS") {
+            dfs();
+        } else {
+            bfs();
+        }
+    }
 
     fix_dpi();
 
     background(255);
 
     draw_map();
-    choosed_algorithm = getValue() ;
-    if(choosed_algorithm == "DFS" ){
-        executing = true; 
-        //dfs()
-        //call_dfs.next();
-    }
-    else if(choosed_algorithm == "BFS"){
-        executing = true; 
-        
-        //path , last_pos = bfs();
-        console.log(path, last_pos)
-        //reset_board()
-        
-        //draw_map()
-
-        //reset_board()
-    }
-    console.log(choosed_algorithm)
-
     draw_map_effects()
     draw_entities()
     

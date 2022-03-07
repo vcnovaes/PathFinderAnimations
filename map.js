@@ -14,7 +14,7 @@ TODO:
 
 */
 
-const W = 30; //square width 
+const W = 100; //square width 
 let columns;
 let rows;
 let board;
@@ -137,7 +137,11 @@ function draw_entities() {
     fill(col_f[0], col_f[1], col_f[2]);
     ellipse(food[0] * W + W / 2, food[1] * W + W / 2, W);
 }
-
+async function redraw_player(){
+    fill(col_p[0], col_p[1], col_p[2]);
+    ellipse(player[0] * W + W / 2, player[1] * W + W / 2, W);
+    await mySleep(100);
+}
 function place_obstacles() {
 
     let n_verticals = floor(random(8,( columns/2)))
@@ -147,7 +151,7 @@ function place_obstacles() {
         let col = floor(random(0, columns));
         let ro = floor(random(0, rows));
 
-        let sz = floor(random(10, 30));
+        let sz = floor(random(5, 10));
 
         for(let r = ro; r < sz + ro && r < rows; r++) {
             if (board[col][r] == OBSTACLE) break;
@@ -348,20 +352,20 @@ async function dfs () {
     }
    // print_solution()
     //executing = false; 
-    drawSolutionPath(sol, last_pos); 
+    drawSolutionPath(sol, lp); 
     await mySleep(delay_time*1000);
     game_state = STOPPED;
 
 }
 const drawSolutionPath = (sol_path, last_pos) => {
-    
+    let solution = [] 
     while(last_pos != player){
         board_effects[last_pos[0]][last_pos[1]] = SOLUTION;
         last_pos = sol_path[last_pos];
         solution.push(last_pos); 
     }
     draw_map_effects();
-    
+    return solution 
 }
 
 async function bfs () {
@@ -415,10 +419,8 @@ async function bfs () {
         board_effects[pos[0]][pos[1]] = VISITED;
     }
     
-    drawSolutionPath(path, lp);
-    await mySleep(delay_time*100);
     game_state = STOPPED;
-    return path, npos  //return the path dict and the last position 
+    return path, lp  //return the path dict and the last position 
 }
 
 let draw_again = false;
@@ -436,8 +438,18 @@ function draw() {
         let nextAlgo = getSelectorValue();
         if(nextAlgo == "DFS") {
             dfs();
+
         } else {
-            bfs();
+            let sol, last_pos = bfs();
+            let solution = drawSolutionPath(sol,last_pos);
+            console.log(solution);
+            for(let i = 0 ; i < solution.length ; i++){
+                player = solution[i];
+                redraw_player();
+                
+                //draw_entities();
+                //await mySleep(10);
+            }
         }
     }
 

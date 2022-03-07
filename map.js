@@ -468,6 +468,7 @@ function calc_Dist(posA){
     return Math.pow(posA[0] - food[0], 2) + Math.pow(posA[1] - food[1], 2) 
 }
 async function guloso(){
+    console.log('entrou')
     game_state = RUNNING;
     let dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
     console.log(JSON.stringify(player));
@@ -475,12 +476,12 @@ async function guloso(){
     path = {}
     let npos; 
     let lp;
-   
+    let pos = player
     while (true) {
 
         if(board_effects[pos[0]][pos[1]] == PATH || board_effects[pos[0]][pos[1]] == VISITED) {
             continue;
-        }
+        } 
 
         board_effects[pos[0]][pos[1]] = PATH;
 
@@ -515,11 +516,12 @@ async function guloso(){
         board_effects[npos[0]][npos[1]] = EDGE;
         path[npos] = pos; 
         board_effects[pos[0]][pos[1]] = VISITED;
-        
+        pos = npos;
     }
 
     path_solution = path;
     last_position = lp; 
+    console.log('Saiu')
     game_state = PRE_WALKING;
 }
 let draw_again = false;

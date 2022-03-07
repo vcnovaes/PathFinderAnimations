@@ -39,9 +39,8 @@ let board_effects;
 const NONE = 6;
 const VISITED = 7;
 const PATH = 8;
+const SOLUTION = 9
 
-
-let solution_path = [];
 let color;
 
 let call_dfs;
@@ -77,6 +76,7 @@ class Queue {
     }
 
 }
+
 
 
 function draw_ij(i, j) {
@@ -236,9 +236,11 @@ function setup() {
     color[NONE] = [0, 0, 0, 0];
     color[VISITED] = [10, 10, 10, 130];
     color[PATH] = [255, 10, 10, 130];
-
+    color[SOLUTION] = [52, 235, 88, 130]
     //setInterval(dfs, 2000);
     //mouseClicked(() => draw_map())
+    //bfs()
+    //dfs()
 }
 
 
@@ -286,13 +288,11 @@ async function dfs () {
         board_effects[pos[0]][pos[1]] = PATH;
 
         draw_ij(pos[0], pos[1]);
-        solution_path.push(pos);
         //draw_map_effects();
         //draw_entities();
 
-        if (pos[0] == food[0] && pos[1] == food[1]){
-            console.log(solution_path); 
-            break;
+        if(pos[0] == food[0] && pos[1] == food[1]) {
+            break; 
         }
 
         for (let i = 0; i < dirs.length; i++) {
@@ -303,24 +303,31 @@ async function dfs () {
                 && board[npos[0]][npos[1]] != OBSTACLE
                 && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
                 await mySleep(1);
-                solution_path.push(npos);
                 stack.push(npos);
-            }else {
-                solution_path.splice(solution_path.findIndex((p) => p == npos))
             }
         }
 
         board_effects[pos[0]][pos[1]] = VISITED;
     }
-    const print_solution = () => {
-        solution_path.forEach((position) =>
-            draw_path(position[0], position[1]) 
-        )
-    }
-    print_solution()
-    executing = false; 
+   // print_solution()
+    //executing = false; 
+
 
 }
+const drawSolutionPath = (sol_path, last_pos) => {
+    
+    const drawSolution = (p) => { 
+        board_effects[p[0]][p][1] = SOLUTION 
+        draw_ij(p[0],p[1])
+    }
+    drawSolution(last_pos)
+    let cur_position = last_pos
+    while(sol_path[cur_position[0]][cur_position[1]] != player){
+        cur_position = sol_path[cur_position[0]][cur_position[1]]
+        drawSolution(cur_position)
+    }
+}
+
 async function bfs () {
     let around = [];
     let dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -332,6 +339,8 @@ async function bfs () {
     
     draw_map_effects();
 
+    path = {}
+    let npos; 
     while (queue.length > 0) {
 
         let pos = queue.pop();
@@ -343,40 +352,30 @@ async function bfs () {
         board_effects[pos[0]][pos[1]] = PATH;
 
         draw_ij(pos[0], pos[1]);
-        solution_path.push(pos);
         //draw_map_effects();
         //draw_entities();
 
-        if (pos[0] == food[0] && pos[1] == food[1]){
-            console.log(solution_path); 
+        if(pos[0] == food[0] && pos[1] == food[1]){
             break;
         }
-
         for (let i = 0; i < dirs.length; i++) {
             let d = dirs[i];
 
-            let npos = [d[0] + pos[0], d[1] + pos[1]];
+            npos = [d[0] + pos[0], d[1] + pos[1]];
             if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
                 && board[npos[0]][npos[1]] != OBSTACLE
                 && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
                 await mySleep(100);
-                solution_path.push(npos);
                 queue.push(npos);
-            }else {
-                solution_path.splice(solution_path.findIndex((p) => p == npos))
+                path[npos] = pos; 
             }
         }
-
         board_effects[pos[0]][pos[1]] = VISITED;
     }
-    const print_solution = () => {
-        solution_path.forEach((position) =>
-            draw_path(position[0], position[1]) 
-        )
-    }
-    print_solution()
-    executing = false; 
+    
 
+    executing = false; 
+    return path, npos  //return the path dict and the last position 
 }
 
 let draw_again = false;
@@ -396,20 +395,19 @@ function draw() {
 
     draw_map();
     choosed_algorithm = getValue() ;
-    if(choosed_algorithm == "DFS" && !executing){
+    if(choosed_algorithm == "DFS" ){
         executing = true; 
-        dfs();
-        
-        draw_map()
-        //reset_board()
+        //dfs()
         //call_dfs.next();
     }
-    else if(choosed_algorithm == "BFS" && !executing){
+    else if(choosed_algorithm == "BFS"){
         executing = true; 
         
-        bfs()
+        //path , last_pos = bfs();
+        console.log(path, last_pos)
+        //reset_board()
         
-        draw_map()
+        //draw_map()
 
         //reset_board()
     }

@@ -14,7 +14,7 @@ TODO:
 
 */
 
-const W = 40; //square width 
+const W = 30; //square width 
 let columns;
 let rows;
 let board;
@@ -36,15 +36,17 @@ const PLAYER = 4;
 const FOOD = 5;
 
 let board_effects;
+
 const NONE = 6;
 const VISITED = 7;
 const PATH = 8;
-const SOLUTION = 9
+const SOLUTION = 9;
+const EDGE = 10;
 
 const STOPPED = 0;
 const RUNNING = 1;
 
-const delay_time = 15;
+const delay_time = 1;
 
 let game_state = STOPPED;
 
@@ -258,9 +260,11 @@ function setup() {
 
 
     color[NONE] = [0, 0, 0, 0];
-    color[VISITED] = [10, 10, 10, 130];
     color[PATH] = [255, 10, 10, 130];
     color[SOLUTION] = [52, 235, 88, 130]
+
+    color[VISITED] = [200, 10, 100, 30];
+    color[EDGE] = [200, 10, 100, 80];
     //setInterval(dfs, 2000);
     //mouseClicked(() => draw_map())
 
@@ -332,6 +336,8 @@ async function dfs () {
                 && board[npos[0]][npos[1]] != OBSTACLE
                 && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
                 await mySleep(delay_time);
+
+                board_effects[npos[0]][npos[1]] = EDGE;
                 stack.push(npos);
             }
         }
@@ -398,6 +404,8 @@ async function bfs () {
                 && board[npos[0]][npos[1]] != OBSTACLE
                 && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
                 await mySleep(delay_time);
+
+                board_effects[npos[0]][npos[1]] = EDGE;
                 queue.push(npos);
                 path[npos] = pos; 
             }

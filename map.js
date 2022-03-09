@@ -15,7 +15,7 @@ TODO:
 */
 
 //import {MinHeap} from './dataStructure.js' 
-const W = 32; //square width 
+const W = 100; //square width 
 let columns;
 let rows;
 let board;
@@ -307,7 +307,7 @@ async function dfs () {
     stack.push(player);
     console.log(JSON.stringify(player));
     let sol = {}
-    let lp = {} 
+    let lp = -1
 
     while (stack.length > 0) {
 
@@ -463,7 +463,7 @@ async function dijkstra(){
     
     heap.insert([0,player])
     let path = {}; 
-    let lp;
+    let lp =-1;
     while(heap.length != 1){
         if(heap.getMin() == null) break; 
         let distance = heap.getMin()[0];
@@ -535,7 +535,7 @@ async function astar(){
     
     heap.insert([0,0,player])
     let path = {}; 
-    let lp;
+    let lp=-1;
     while(heap.length != 1){
         if(heap.getMin() == null) break; 
         let distance = heap.getMin()[1];
@@ -593,7 +593,7 @@ async function guloso(){
     
     path = {}
     let npos; 
-    let lp;
+    let lp=-1;
     let pos = player
     while (true) {
 
@@ -728,7 +728,6 @@ function draw() {
         let nextAlgo = getSelectorValue();
         if(nextAlgo == "DFS") {
              dfs();
-
         } else if(nextAlgo == "BFS") {
             bfs();
         } else if(nextAlgo == "GULOSO") {
@@ -739,15 +738,15 @@ function draw() {
             astar();
         }
     } else if(game_state == PRE_WALKING) {
-        /* if(last_position == -1){
-            //game_state = STOPPED;
-        } else{ */
+        if(last_position == -1){
+            game_state = STOPPED;
+        } else{
             let path = drawSolutionPath(path_solution, last_position);
             player_anim = player;
             animatePlayer(path);
 
             game_state = WALKING;    
-        
+        }
     } else if(game_state == WALKING) {
         draw_anim();
 

@@ -258,14 +258,16 @@ function generate_terrain() {
 
 
 
-function reset_board() {
+function reset_board(value) {
 
     for (let i = 0; i < columns; i++) {
         for (let j = 0; j < rows; j++) {
             board_effects[i][j] = NONE;
         }
     }
-    place_obstacles()
+    if(value==1){
+        place_obstacles()
+    }
     food =[-1,-1]
     player = [-1,-1]
     place_entity(PLAYER);
@@ -342,7 +344,6 @@ async function dfs () {
 
 function drawSolutionPath(sol_path, last_pos) {
     let solution = [food]; 
-
     while(last_pos != player){
         board_effects[last_pos[0]][last_pos[1]] = SOLUTION;
         last_pos = sol_path[last_pos];
@@ -399,9 +400,9 @@ async function bfs () {
     
     path = {}
     let npos; 
-    let lp;
+    let lp = -1;
     while (queue.length > 0) {
-
+        console.log('loop')
         let pos = queue.pop();
 
         if(board_effects[pos[0]][pos[1]] == PATH || board_effects[pos[0]][pos[1]] == VISITED) {
@@ -434,6 +435,7 @@ async function bfs () {
     path_solution = path;
     last_position = lp; 
     game_state = PRE_WALKING;
+    console.log('terminou loop')
 }
 
 function heuristic(posA){    
@@ -651,7 +653,7 @@ const getSelectorValue = () =>  {
 function generate_new_map() {
     iterations += 1;
     generate_terrain();
-    reset_board();
+    reset_board(1);
 }
 
 function setup() {
@@ -705,10 +707,10 @@ function setup() {
 
     let next = getSelectorValue();
 
-    //bfs()
+    bfs()
     //dfs()
    //dijkstra();
-    astar();
+    //astar();
 }
 
 function draw() {
@@ -722,14 +724,13 @@ function draw() {
     draw_entities();
 
     if(game_state == STOPPED) {
-        reset_board();
+        reset_board(0);
         let nextAlgo = getSelectorValue();
         if(nextAlgo == "DFS") {
              dfs();
 
         } else if(nextAlgo == "BFS") {
             bfs();
-            
         } else if(nextAlgo == "GULOSO") {
             guloso();
         } else if(nextAlgo == "CUSTO_UNIFORME"){
@@ -738,11 +739,15 @@ function draw() {
             astar();
         }
     } else if(game_state == PRE_WALKING) {
-        let path = drawSolutionPath(path_solution, last_position);
-        player_anim = player;
-        animatePlayer(path);
+        /* if(last_position == -1){
+            //game_state = STOPPED;
+        } else{ */
+            let path = drawSolutionPath(path_solution, last_position);
+            player_anim = player;
+            animatePlayer(path);
 
-        game_state = WALKING;
+            game_state = WALKING;    
+        
     } else if(game_state == WALKING) {
         draw_anim();
 

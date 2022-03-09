@@ -523,7 +523,9 @@ async function dijkstra(){
         let pos = heap.getMin()[1];
         heap.remove();
         
-        if(distance > DijkstraDist[pos[0]][pos[1]])continue;
+        if(distance > DijkstraDist[pos[0]][pos[1]]) {
+            continue;
+        }
         //
         if(board_effects[pos[0]][pos[1]] == PATH || board_effects[pos[0]][pos[1]] == VISITED) {
             continue;
@@ -667,7 +669,7 @@ async function guloso(){
         
             if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
                 && board[npos[0]][npos[1]] != OBSTACLE
-                && /* board_effects[npos[0]][npos[1]] != VISITED && */ board_effects[npos[0]][npos[1]] != PATH ) {
+                && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
                     await mySleep(delay_time);
                     let dist_cur = heuristic(npos);
                     if (dist_min > dist_cur){
@@ -736,10 +738,10 @@ function draw() {
     } else if(game_state == WALKING) {
         draw_anim();
 
-        //let nextAlgo = getSelectorValue();
-        //if(nextAlgo == "CUSTO_UNIFORME" && DijkstraDist != null){
+        let nextAlgo = getSelectorValue();
+        if(nextAlgo == "CUSTO_UNIFORME" && DijkstraDist != null) {
             draw_map_distances();
-        //}
+        }
     }
 
     

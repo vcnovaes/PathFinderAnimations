@@ -256,12 +256,7 @@ function generate_terrain() {
     }
 }
 
-function generate_new_map() {
-    iterations += 1;
-    generate_terrain();
-    reset_board();
-    place_obstacles();
-}
+
 
 function reset_board() {
 
@@ -270,65 +265,13 @@ function reset_board() {
             board_effects[i][j] = NONE;
         }
     }
-
+    place_obstacles()
+    food =[-1,-1]
+    player = [-1,-1]
     place_entity(PLAYER);
     place_entity(FOOD);
 }
 
-function setup() {
-
-    //frameRate(10);
-
-    createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-
-    /// Calculate columns and rows
-    columns = floor(width / W);
-    rows = floor(height / W);
-    board = new Array(columns);
-    board_effects = new Array(columns);
-    DijkstraDist = new Array(columns);
-
-
-    for (let i = 0; i < columns; i++) {
-        board[i] = new Array(rows);
-        board_effects[i] = new Array(rows);
-        DijkstraDist[i] = new Array(rows);
-    }
-
-
-
-    generate_terrain();
-
-    place_obstacles();
-    place_entity(PLAYER);
-    place_entity(FOOD);
-    heap = new MinHeap();
-    color = new Array(11);
-    color[SAND] = [230, 197, 37];
-    color[MUD] = [92, 51, 18];
-    color[WATER] = [95, 116, 222];
-    color[OBSTACLE] = [121, 114, 125];
-    color[PLAYER] = [84, 191, 113];
-    color[FOOD] = [191, 84, 130];
-
-
-    color[NONE] = [0, 0, 0, 0];
-    color[PATH] = [255, 10, 10, 130];
-    color[SOLUTION] = [52, 235, 88, 130]
-
-    color[VISITED] = [200, 10, 100, 30];
-    color[EDGE] = [200, 10, 100, 80];
-    //setInterval(dfs, 2000);
-    //mouseClicked(() => draw_map())
-
-
-    let next = getSelectorValue();
-
-    //bfs()
-    //dfs()
-   //dijkstra();
-    astar();
-}
 
 
 function place_entity(who) {
@@ -337,8 +280,10 @@ function place_entity(who) {
 
     if (board[r_c][r_r] != OBSTACLE) {
         if(who == PLAYER) {
-            player = [r_c, r_r];
+            if(r_c == food[0] && r_r == food[1]) place_entity(who);
+            player = [r_c, r_r]
         } else {
+            if(r_c == player[0] && r_r == player[1]) place_entity(who);
             food = [r_c, r_r];
         }
     } else {
@@ -701,6 +646,69 @@ const getSelectorValue = () =>  {
     const val = document.querySelector('select').value 
     //console.log(val) 
     return val 
+}
+
+function generate_new_map() {
+    iterations += 1;
+    generate_terrain();
+    reset_board();
+}
+
+function setup() {
+
+    //frameRate(10);
+
+    createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    /// Calculate columns and rows
+    columns = floor(width / W);
+    rows = floor(height / W);
+    board = new Array(columns);
+    board_effects = new Array(columns);
+    DijkstraDist = new Array(columns);
+
+
+    for (let i = 0; i < columns; i++) {
+        board[i] = new Array(rows);
+        board_effects[i] = new Array(rows);
+        DijkstraDist[i] = new Array(rows);
+    }
+
+
+
+    generate_terrain();
+
+    place_obstacles();
+    food =[-1,-1]
+    player = [-1,-1]
+    place_entity(PLAYER);
+    place_entity(FOOD);
+    heap = new MinHeap();
+    color = new Array(11);
+    color[SAND] = [230, 197, 37];
+    color[MUD] = [92, 51, 18];
+    color[WATER] = [95, 116, 222];
+    color[OBSTACLE] = [121, 114, 125];
+    color[PLAYER] = [84, 191, 113];
+    color[FOOD] = [191, 84, 130];
+
+
+    color[NONE] = [0, 0, 0, 0];
+    color[PATH] = [255, 10, 10, 130];
+    color[SOLUTION] = [52, 235, 88, 130]
+
+    color[VISITED] = [200, 10, 100, 30];
+    color[EDGE] = [200, 10, 100, 80];
+    //setInterval(dfs, 2000);
+    //mouseClicked(() => draw_map())
+
+
+    let next = getSelectorValue();
+
+    //bfs()
+    //dfs()
+   //dijkstra();
+    astar();
 }
 
 function draw() {

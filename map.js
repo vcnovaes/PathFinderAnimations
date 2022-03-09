@@ -15,7 +15,7 @@ TODO:
 */
 
 //import {MinHeap} from './dataStructure.js' 
-const W = 50; //square width 
+const W = 40; //square width 
 let columns;
 let rows;
 let board;
@@ -150,7 +150,7 @@ function draw_map_distances() {
     for (let i = 0; i < columns; i++) {
         for (let j = 0; j < rows; j++) {
             let d = DijkstraDist[i][j];
-            textSize(20);
+            textSize(12);
             fill(0, 0, 0, 150);
             strokeWeight(0.02);
             text(d, i * W, (j + 1) * W);
@@ -326,7 +326,8 @@ function setup() {
 
     //bfs()
     //dfs()
-   dijkstra();
+   //dijkstra();
+    astar();
 }
 
 
@@ -435,7 +436,7 @@ async function animatePlayer(path) {
         cur ++;
     }
 
-    await mySleep(2000);
+    await mySleep(5000);
 
     game_state = STOPPED;
 }
@@ -490,8 +491,8 @@ async function bfs () {
     game_state = PRE_WALKING;
 }
 
-function calc_Dist(posA){    
-    return Math.pow(posA[0] - food[0], 2) + Math.pow(posA[1] - food[1], 2) 
+function heuristic(posA){    
+    return Math.abs(posA[0] - food[0]) + Math.abs(posA[1] - food[1]); 
 }
 
 async function dijkstra(){
@@ -564,6 +565,77 @@ async function dijkstra(){
     game_state = PRE_WALKING;
 }
 
+async function astar(){
+
+    game_state = RUNNING;
+    let around = [];
+    let dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    
+    for(let i =0;i < columns;i++){
+        for(let j = 0 ; j < rows; j++){
+            DijkstraDist[i][j] = Number.POSITIVE_INFINITY;
+        }
+    }
+
+    DijkstraDist[player[0]][player[1]] = 0; 
+     
+    
+    //heap.insert([0,source]);
+   // heap.remove(); 
+    //heap.getMin() ; 
+    
+    heap.insert([0,0,player])
+    let path = {}; 
+    let lp;
+    while(heap.length != 1){
+        if(heap.getMin() == null) break; 
+        let distance = heap.getMin()[1];
+        let pos = heap.getMin()[2];
+        heap.remove();
+        
+        if(distance > DijkstraDist[pos[0]][pos[1]])continue;
+        //
+        if(board_effects[pos[0]][pos[1]] == PATH || board_effects[pos[0]][pos[1]] == VISITED) {
+            continue;
+        }
+
+        //board_effects[pos[0]][pos[1]] = PATH;
+
+        if(pos[0] == food[0] && pos[1] == food[1]){
+            lp = pos;
+            //break;
+        }
+        for (let i = 0; i < dirs.length; i++) {
+            let d = dirs[i];
+
+            npos = [d[0] + pos[0], d[1] + pos[1]];
+
+            if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
+                && board[npos[0]][npos[1]] != OBSTACLE
+                && board_effects[npos[0]][npos[1]] != PATH ) {
+
+                let slow = terrain_slow(board[npos[0]][npos[1]]);
+                if((DijkstraDist[pos[0]][pos[1]] + slow) < DijkstraDist[npos[0]][npos[1]]){
+                    DijkstraDist[npos[0]][npos[1]] = DijkstraDist[pos[0]][pos[1]] + slow;
+                    board_effects[npos[0]][npos[1]] = EDGE;
+                    //queue.push(npos);
+                    heap.insert([ DijkstraDist[npos[0]][npos[1]] + heuristic(npos) * 0.8,DijkstraDist[npos[0]][npos[1]],npos])
+                    path[npos] = pos; 
+                    await mySleep(delay_time);
+                }
+            }
+        }
+        board_effects[pos[0]][pos[1]] = VISITED;
+        //
+
+    }
+    heap.heap = [null];
+    path_solution = path;
+    last_position = lp; 
+    game_state = PRE_WALKING;
+}
+
+
 async function guloso(){
     console.log('entrou')
     game_state = RUNNING;
@@ -597,7 +669,7 @@ async function guloso(){
                 && board[npos[0]][npos[1]] != OBSTACLE
                 && /* board_effects[npos[0]][npos[1]] != VISITED && */ board_effects[npos[0]][npos[1]] != PATH ) {
                     await mySleep(delay_time);
-                    let dist_cur = calc_Dist(npos);
+                    let dist_cur = heuristic(npos);
                     if (dist_min > dist_cur){
                         index = i;
                         dist_min = dist_cur;
@@ -652,6 +724,8 @@ function draw() {
             guloso();
         } else if(nextAlgo == "CUSTO_UNIFORME"){
             dijkstra();
+        } else if(nextAlgo == "A*") {
+            astar();
         }
     } else if(game_state == PRE_WALKING) {
         let path = drawSolutionPath(path_solution, last_position);
@@ -662,10 +736,10 @@ function draw() {
     } else if(game_state == WALKING) {
         draw_anim();
 
-        let nextAlgo = getSelectorValue();
-        if(nextAlgo == "CUSTO_UNIFORME" && DijkstraDist != null){
+        //let nextAlgo = getSelectorValue();
+        //if(nextAlgo == "CUSTO_UNIFORME" && DijkstraDist != null){
             draw_map_distances();
-        }
+        //}
     }
 
     

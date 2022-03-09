@@ -15,7 +15,7 @@ TODO:
 */
 
 //import {MinHeap} from './dataStructure.js' 
-const W = 100; //square width 
+const W = 32; //square width 
 let columns;
 let rows;
 let board;
@@ -26,11 +26,11 @@ let ground_type;
 let fun_arg;
 let choosed_algorithm
 let executing = false;
-
+let Botao
 let path_solution ; 
 let last_position ; 
 let heap; 
-
+let cont
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 800;
 
@@ -53,6 +53,7 @@ const STOPPED = 0;
 const RUNNING = 1;
 const PRE_WALKING = 2; 
 const WALKING = 3; 
+const FORCED_STOP = 4;
 const delay_time = 1;
 
 
@@ -370,7 +371,7 @@ async function animatePlayer(path) {
         let n = 20;
 
         for (let i = 1; i < n - 1; i++) {
-
+            if(game_state==FORCED_STOP) return
             let ratio = i / n;
 
             player_anim[0] = player_anim[0] * (1.0 - ratio) + next_pos[0] * ratio;
@@ -381,7 +382,7 @@ async function animatePlayer(path) {
 
         cur ++;
     }
-
+    
     await mySleep(1000);
 
     game_state = STOPPED;
@@ -422,6 +423,7 @@ async function bfs () {
             if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
                 && board[npos[0]][npos[1]] != OBSTACLE
                 && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
+                if(game_state==FORCED_STOP) return;
                 await mySleep(delay_time);
 
                 board_effects[npos[0]][npos[1]] = EDGE;
@@ -429,6 +431,7 @@ async function bfs () {
                 path[npos] = pos; 
             }
         }
+        if(game_state==FORCED_STOP) return;
         board_effects[pos[0]][pos[1]] = VISITED;
     }
 
@@ -652,14 +655,16 @@ const getSelectorValue = () =>  {
 
 function generate_new_map() {
     iterations += 1;
+    console.log("testandooo")
+    game_state= STOPPED
     generate_terrain();
     reset_board(1);
 }
 
 function setup() {
-
     //frameRate(10);
-
+    cont =0
+    flag =1
     createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 
     /// Calculate columns and rows
@@ -712,9 +717,11 @@ function setup() {
    //dijkstra();
     //astar();
 }
-
+        
 function draw() {
-
+    document.getElementById("botao").onclick = function() {
+        game_state = FORCED_STOP
+    }
     fix_dpi();
 
     background(255);
@@ -722,7 +729,7 @@ function draw() {
     draw_map();
     draw_map_effects();
     draw_entities();
-
+    
     if(game_state == STOPPED) {
         reset_board(0);
         let nextAlgo = getSelectorValue();
@@ -754,8 +761,14 @@ function draw() {
         if(nextAlgo == "CUSTO_UNIFORME" && DijkstraDist != null) {
             draw_map_distances();
         }
+    } else if(game_state == FORCED_STOP){
+        cont++
+        
+        generate_new_map()
+        if(cont%4==0)
+        game_state = STOPPED
     }
-
+    
     
     //call_teste.next();
 

@@ -15,7 +15,7 @@ TODO:
 */
 
 //import {MinHeap} from './dataStructure.js' 
-const W = 40; //square width 
+const W = 32; //square width 
 let columns;
 let rows;
 let board;
@@ -419,9 +419,9 @@ async function animatePlayer(path) {
         let next_pos = path[cur];
 
 
-        let slow = terrain_slow(board[next_pos[0]][next_pos[1]]) * 50;
+        let slow = terrain_slow(board[next_pos[0]][next_pos[1]]) * 10;
 
-        let n = 10;
+        let n = 20;
 
         for (let i = 1; i < n - 1; i++) {
 
@@ -436,7 +436,7 @@ async function animatePlayer(path) {
         cur ++;
     }
 
-    await mySleep(5000);
+    await mySleep(1000);
 
     game_state = STOPPED;
 }
@@ -603,7 +603,7 @@ async function astar(){
 
         if(pos[0] == food[0] && pos[1] == food[1]){
             lp = pos;
-            //break;
+            break;
         }
         for (let i = 0; i < dirs.length; i++) {
             let d = dirs[i];

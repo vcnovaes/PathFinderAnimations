@@ -1,4 +1,4 @@
-export class MinHeap {
+class MinHeap {
     constructor () {
         /* Initialing the array heap and adding a dummy element at index 0 */
         this.heap = [null]
@@ -74,5 +74,11 @@ export class MinHeap {
         }
 
         return smallest
+    }
+    get length () {
+        return this.heap.length;
+    }
+    empty(){
+        this.heap.length == 0 ? true : false; 
     }
 }

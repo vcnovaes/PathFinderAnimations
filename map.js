@@ -15,7 +15,7 @@ TODO:
 */
 
 //import {MinHeap} from './dataStructure.js' 
-const W = 70; //square width 
+const W = 50; //square width 
 let columns;
 let rows;
 let board;
@@ -29,6 +29,7 @@ let executing = false;
 
 let path_solution ; 
 let last_position ; 
+let heap; 
 
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 800;
@@ -67,6 +68,8 @@ let player_anim;
 
 let path_square = []
 
+let DijkstraDist ; 
+
 
 
 class Queue {
@@ -99,7 +102,7 @@ class Queue {
 
 function terrain_slow(terrain_type) {
     if(terrain_type == WATER) {
-        return 10;
+        return 100;
     } else if(terrain_type == MUD) {
         return 1;
     } else if(terrain_type == SAND) {
@@ -139,6 +142,21 @@ function draw_map_effects() {
             strokeWeight(0.02);
             rect(i * W, j * W, W, W);
             fill(0);
+        }
+    }
+}
+
+function draw_map_distances() {
+    for (let i = 0; i < columns; i++) {
+        for (let j = 0; j < rows; j++) {
+            let d = DijkstraDist[i][j];
+            textSize(20);
+            fill(0, 0, 0, 150);
+            strokeWeight(0.02);
+            text(d, i * W, (j + 1) * W);
+            //rect(i * W, j * W, W, W);
+            //fill(0);
+
         }
     }
 }
@@ -268,20 +286,23 @@ function setup() {
     rows = floor(height / W);
     board = new Array(columns);
     board_effects = new Array(columns);
-
+    DijkstraDist = new Array(columns);
 
 
     for (let i = 0; i < columns; i++) {
         board[i] = new Array(rows);
         board_effects[i] = new Array(rows);
+        DijkstraDist[i] = new Array(rows);
     }
+
+
 
     generate_terrain();
 
     place_obstacles();
     place_entity(PLAYER);
     place_entity(FOOD);
-
+    heap = new MinHeap();
     color = new Array(11);
     color[SAND] = [230, 197, 37];
     color[MUD] = [92, 51, 18];
@@ -303,8 +324,9 @@ function setup() {
 
     let next = getSelectorValue();
 
-    bfs()
+    //bfs()
     //dfs()
+   dijkstra();
 }
 
 
@@ -413,6 +435,8 @@ async function animatePlayer(path) {
         cur ++;
     }
 
+    await mySleep(2000);
+
     game_state = STOPPED;
 }
 
@@ -469,6 +493,77 @@ async function bfs () {
 function calc_Dist(posA){    
     return Math.pow(posA[0] - food[0], 2) + Math.pow(posA[1] - food[1], 2) 
 }
+
+async function dijkstra(){
+
+    game_state = RUNNING;
+    let around = [];
+    let dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    
+    for(let i =0;i < columns;i++){
+        for(let j = 0 ; j < rows; j++){
+            DijkstraDist[i][j] = Number.POSITIVE_INFINITY;
+        }
+    }
+
+    DijkstraDist[player[0]][player[1]] = 0; 
+     
+    
+    //heap.insert([0,source]);
+   // heap.remove(); 
+    //heap.getMin() ; 
+    
+    heap.insert([0,player])
+    let path = {}; 
+    let lp;
+    while(heap.length != 1){
+        if(heap.getMin() == null) break; 
+        let distance = heap.getMin()[0];
+        let pos = heap.getMin()[1];
+        heap.remove();
+        
+        if(distance > DijkstraDist[pos[0]][pos[1]])continue;
+        //
+        if(board_effects[pos[0]][pos[1]] == PATH || board_effects[pos[0]][pos[1]] == VISITED) {
+            continue;
+        }
+
+        //board_effects[pos[0]][pos[1]] = PATH;
+
+        if(pos[0] == food[0] && pos[1] == food[1]){
+            lp = pos;
+            //break;
+        }
+        for (let i = 0; i < dirs.length; i++) {
+            let d = dirs[i];
+
+            npos = [d[0] + pos[0], d[1] + pos[1]];
+
+            if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
+                && board[npos[0]][npos[1]] != OBSTACLE
+                && board_effects[npos[0]][npos[1]] != PATH ) {
+
+                let slow = terrain_slow(board[npos[0]][npos[1]]);
+                if((DijkstraDist[pos[0]][pos[1]] + slow) < DijkstraDist[npos[0]][npos[1]]){
+                    DijkstraDist[npos[0]][npos[1]] = DijkstraDist[pos[0]][pos[1]] + slow;
+                    board_effects[npos[0]][npos[1]] = EDGE;
+                    //queue.push(npos);
+                    heap.insert([ DijkstraDist[npos[0]][npos[1]],npos])
+                    path[npos] = pos; 
+                    await mySleep(delay_time);
+                }
+            }
+        }
+        board_effects[pos[0]][pos[1]] = VISITED;
+        //
+
+    }
+    heap.heap = [null];
+    path_solution = path;
+    last_position = lp; 
+    game_state = PRE_WALKING;
+}
+
 async function guloso(){
     console.log('entrou')
     game_state = RUNNING;
@@ -555,6 +650,8 @@ function draw() {
             
         } else if(nextAlgo == "GULOSO") {
             guloso();
+        } else if(nextAlgo == "CUSTO_UNIFORME"){
+            dijkstra();
         }
     } else if(game_state == PRE_WALKING) {
         let path = drawSolutionPath(path_solution, last_position);
@@ -564,6 +661,11 @@ function draw() {
         game_state = WALKING;
     } else if(game_state == WALKING) {
         draw_anim();
+
+        let nextAlgo = getSelectorValue();
+        if(nextAlgo == "CUSTO_UNIFORME" && DijkstraDist != null){
+            draw_map_distances();
+        }
     }
 
     

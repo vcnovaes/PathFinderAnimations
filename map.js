@@ -15,7 +15,7 @@ TODO:
 */
 
 //import {MinHeap} from './dataStructure.js' 
-const W = 100; //square width 
+const W = 70; //square width 
 let columns;
 let rows;
 let board;
@@ -26,7 +26,7 @@ let ground_type;
 let fun_arg;
 let choosed_algorithm
 let executing = false;
-let distance
+
 let path_solution ; 
 let last_position ; 
 
@@ -39,10 +39,6 @@ const MUD = 2;
 const OBSTACLE = 3;
 const PLAYER = 4;
 const FOOD = 5;
-
-const VAL_WATER = 10
-const VAL_SAND = 5
-const VAL_MUD = 1
 
 let board_effects;
 
@@ -57,7 +53,7 @@ const RUNNING = 1;
 const PRE_WALKING = 2; 
 const WALKING = 3; 
 const delay_time = 1;
-const INF = 9999999
+
 
 let game_state = STOPPED;
 
@@ -103,11 +99,11 @@ class Queue {
 
 function terrain_slow(terrain_type) {
     if(terrain_type == WATER) {
-        return VAL_WATER;
+        return 10;
     } else if(terrain_type == MUD) {
-        return VAL_MUD;
+        return 1;
     } else if(terrain_type == SAND) {
-        return VAL_SAND;
+        return 5;
     }
 }
 
@@ -247,8 +243,6 @@ function generate_new_map() {
     generate_terrain();
     reset_board();
     place_obstacles();
-    place_entity(PLAYER);
-    place_entity(FOOD);
 }
 
 function reset_board() {
@@ -256,11 +250,11 @@ function reset_board() {
     for (let i = 0; i < columns; i++) {
         for (let j = 0; j < rows; j++) {
             board_effects[i][j] = NONE;
-            distance[i][j] = INF
         }
     }
 
-    
+    place_entity(PLAYER);
+    place_entity(FOOD);
 }
 
 function setup() {
@@ -274,25 +268,20 @@ function setup() {
     rows = floor(height / W);
     board = new Array(columns);
     board_effects = new Array(columns);
-    distance = new Array(columns);
+
 
 
     for (let i = 0; i < columns; i++) {
         board[i] = new Array(rows);
         board_effects[i] = new Array(rows);
-        distance[i] = new Array(rows);
-        for (let j = 0; j < columns; j++){
-            distance[i][j]=INF;
-        }
     }
-    
-    generate_new_map()
-    //generate_terrain();
-//
-    //place_entity(PLAYER);
-    //place_entity(FOOD);
-    //place_obstacles();
-    
+
+    generate_terrain();
+
+    place_obstacles();
+    place_entity(PLAYER);
+    place_entity(FOOD);
+
     color = new Array(11);
     color[SAND] = [230, 197, 37];
     color[MUD] = [92, 51, 18];
@@ -310,6 +299,9 @@ function setup() {
     color[EDGE] = [200, 10, 100, 80];
     //setInterval(dfs, 2000);
     //mouseClicked(() => draw_map())
+
+
+    let next = getSelectorValue();
 
     bfs()
     //dfs()
@@ -474,55 +466,6 @@ async function bfs () {
     game_state = PRE_WALKING;
 }
 
-async function custo_uniforme(){
-    game_state = RUNNING;
-    let around = [];
-    let dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-
-    let queue = new Queue();
-
-    queue.push(player);
-    console.log(JSON.stringify(player));
-    
-    path = {}
-    let npos; 
-    let lp;
-    while (queue.length > 0) {
-
-        let pos = queue.pop();
-
-        if(board_effects[pos[0]][pos[1]] == PATH || board_effects[pos[0]][pos[1]] == VISITED) {
-            continue;
-        }
-
-        board_effects[pos[0]][pos[1]] = PATH;
-
-        if(pos[0] == food[0] && pos[1] == food[1]){
-            lp = pos;
-            break;
-        }
-        for (let i = 0; i < dirs.length; i++) {
-            let d = dirs[i];
-
-            npos = [d[0] + pos[0], d[1] + pos[1]];
-            if (npos[0] >= 0 && npos[1] >= 0 && npos[0] < columns && npos[1] < rows
-                && board[npos[0]][npos[1]] != OBSTACLE
-                && board_effects[npos[0]][npos[1]] != VISITED && board_effects[npos[0]][npos[1]] != PATH ) {
-                await mySleep(delay_time);
-
-                board_effects[npos[0]][npos[1]] = EDGE;
-                queue.push(npos);
-                path[npos] = pos; 
-            }
-        }
-        board_effects[pos[0]][pos[1]] = VISITED;
-    }
-
-    path_solution = path;
-    last_position = lp; 
-    game_state = PRE_WALKING;
-}
-
 function calc_Dist(posA){    
     return Math.pow(posA[0] - food[0], 2) + Math.pow(posA[1] - food[1], 2) 
 }
@@ -549,7 +492,7 @@ async function guloso(){
             break;
         }
 
-        let index=-1, dist_min =INF
+        let index=-1, dist_min =1000000
         for (let i = 0; i < dirs.length; i++) {
             let d = dirs[i];
 
@@ -612,8 +555,6 @@ function draw() {
             
         } else if(nextAlgo == "GULOSO") {
             guloso();
-        } else if(nextAlgo == "CUSTO_UNIFORME"){
-            custo_uniforme()
         }
     } else if(game_state == PRE_WALKING) {
         let path = drawSolutionPath(path_solution, last_position);

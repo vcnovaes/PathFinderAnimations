@@ -15,7 +15,7 @@ TODO:
 */
 
 //import {MinHeap} from './dataStructure.js' 
-const W = 40; //square width 
+const W = 30; //square width 
 let columns;
 let rows;
 let board;
@@ -366,7 +366,7 @@ async function animatePlayer(path) {
         let next_pos = path[cur];
 
 
-        let slow = terrain_slow(board[next_pos[0]][next_pos[1]]) * 10;
+        let slow = terrain_slow(board[next_pos[0]][next_pos[1]]) * 40;
 
         let n = 20;
 

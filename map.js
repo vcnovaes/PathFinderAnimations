@@ -15,7 +15,7 @@ TODO:
 */
 
 //import {MinHeap} from './dataStructure.js' 
-const W = 32; //square width 
+const W = 40; //square width 
 let columns;
 let rows;
 let board;
@@ -103,7 +103,7 @@ class Queue {
 
 function terrain_slow(terrain_type) {
     if(terrain_type == WATER) {
-        return 100;
+        return 10;
     } else if(terrain_type == MUD) {
         return 1;
     } else if(terrain_type == SAND) {

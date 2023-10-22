@@ -7,4 +7,4 @@
     - Dijkstra Algorithm 
     - Greedy Search
 - You can run the software locally using Visual Studio Code extension Live Server or run `python -m http.server`
-- Or you can just open our github page through this link: https://vcnovaes.github.io/PathFinderAnimations/ 
+- Or you can just open our github page through this link: https://vcnovaes.github.io/PathfindingAnimations/
